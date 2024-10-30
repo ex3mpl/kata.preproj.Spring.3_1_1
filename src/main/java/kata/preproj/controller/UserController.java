@@ -2,7 +2,7 @@ package kata.preproj.controller;
 
 import jakarta.validation.Valid;
 import kata.preproj.model.User;
-import kata.preproj.repository.UserRepository;
+import kata.preproj.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/signup")
@@ -34,15 +34,14 @@ public class UserController {
             return "add-user";
         }
 
-        userRepository.save(user);
+        userService.save(user);
         return "redirect:/index";
     }
 
     // get user by id
     @GetMapping("/edit/{id}")
     public String showUpdateForm(@PathVariable("id") long id, Model model) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
+        User user = userService.findById(id);
 
         model.addAttribute("user", user);
         return "update-user";
@@ -57,16 +56,15 @@ public class UserController {
             return "update-user";
         }
 
-        userRepository.save(user);
+        userService.save(user);
         return "redirect:/index";
     }
 
     // delete user by id
     @GetMapping("/delete/{id}")
     public String deleteUser(@PathVariable("id") long id, Model model) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
-        userRepository.delete(user);
+        User user = userService.findById(id);
+        userService.delete(user.getId());
         return "redirect:/index";
     }
 
@@ -75,7 +73,7 @@ public class UserController {
     // mapping for the /index URL
     @GetMapping("/index")
     public String showUserList(Model model) {
-        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("users", userService.findAll());
         return "index";
     }
 }
